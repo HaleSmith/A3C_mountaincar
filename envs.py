@@ -49,9 +49,9 @@ class MountainCarDiscrete(gym.ObservationWrapper):
             ind = np.digitize(obs, bins)
             coord.append(ind)
 
-        x = np.zeros((32, 32))
+        x = np.zeros((32, 32), dtype=np.float32)
         x[coord] = 1.0
-        # x = x.flatten()
+        x = x.flatten()
         return np.array([x])
 
 class AtariRescale42x42(gym.ObservationWrapper):
@@ -82,6 +82,4 @@ class NormalizedEnv(gym.ObservationWrapper):
         unbiased_std = self.state_std / (1 - pow(self.alpha, self.num_steps))
 
         obs = (observation - unbiased_mean) / (unbiased_std + 1e-8)
-        print(obs)
-        print(obs.shape)
         return obs

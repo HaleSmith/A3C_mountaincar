@@ -35,12 +35,12 @@ def train(rank, args, shared_model, counter, lock, optimizer=None):
     while True:
         # Sync with the shared model
         model.load_state_dict(shared_model.state_dict())
-        if done:
-            cx = torch.zeros(1, 256)
-            hx = torch.zeros(1, 256)
-        else:
-            cx = cx.detach()
-            hx = hx.detach()
+        # if done:
+            # cx = torch.zeros(1, 256)
+            # hx = torch.zeros(1, 256)
+        # else:
+            # cx = cx.detach()
+            # hx = hx.detach()
 
         values = []
         log_probs = []
@@ -49,8 +49,12 @@ def train(rank, args, shared_model, counter, lock, optimizer=None):
 
         for step in range(args.num_steps):
             episode_length += 1
-            value, logit, (hx, cx) = model((state.unsqueeze(0),
-                                            (hx, cx)))
+            # value, logit, (hx, cx) = model((state.unsqueeze(0),
+                                            # (hx, cx)))
+            value, logit = model(state.unsqueeze(0))
+            value = value.view(1,1)
+            logit = logit.view(1,env.action_space.n)
+                                            
             prob = F.softmax(logit, dim=-1)
             log_prob = F.log_softmax(logit, dim=-1)
             entropy = -(log_prob * prob).sum(1, keepdim=True)
@@ -59,7 +63,8 @@ def train(rank, args, shared_model, counter, lock, optimizer=None):
             action = prob.multinomial(num_samples=1).detach()
             log_prob = log_prob.gather(1, action)
 
-            state, reward, done, _ = env.step(action.numpy())
+            action = action.view(1)
+            state, reward, done, _ = env.step(action.numpy()[0])
             done = done or episode_length >= args.max_episode_length
             reward = max(min(reward, 1), -1)
 
@@ -80,7 +85,8 @@ def train(rank, args, shared_model, counter, lock, optimizer=None):
 
         R = torch.zeros(1, 1)
         if not done:
-            value, _, _ = model((state.unsqueeze(0), (hx, cx)))
+            # value, _, _ = model((state.unsqueeze(0), (hx, cx)))
+            value, _ = model(state.unsqueeze(0))
             R = value.detach()
 
         values.append(R)
