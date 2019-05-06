@@ -18,6 +18,12 @@ from train import train
 parser = argparse.ArgumentParser(description='A3C')
 parser.add_argument('--lr', type=float, default=0.0001,
                     help='learning rate (default: 0.0001)')
+parser.add_argument('--tt', type=float, default=10,
+                    help='thread update freq (default: 10)')
+parser.add_argument('--tg', type=float, default=10,
+                    help='global update freq (default: 10)')
+parser.add_argument('--epsilon', type=float, default=0.01,
+                    help='epsilon action selection (default: 0.01)')
 parser.add_argument('--gamma', type=float, default=0.99,
                     help='discount factor for rewards (default: 0.99)')
 parser.add_argument('--gae-lambda', type=float, default=1.00,
